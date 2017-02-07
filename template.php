@@ -171,7 +171,7 @@ function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
     //'branch' =>  array_merge(array('' => t('Choose a branch')), ding_provider_invoke('reservation', 'pickup_branches')),
     //Needs DDElibra trimning to limit values.
     //'department' => array_merge(array('' => t('Choose a target')), alma_client_invoke('get_departments')),
-      'department' => array_merge(array('' => t('Choose a target')), array()),
+      //'department' => array_merge(array('' => t('Choose a target')), array()),
   );  
   $advanced_fields = array(
     'term.title' => array(
