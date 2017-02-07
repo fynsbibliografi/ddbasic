@@ -141,7 +141,7 @@ function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
 
     $ting_well_data = array(
     'type' => array_merge(array('' => "Vælg en type"), drupal_map_assoc(array_keys(variable_get('ting_well_types', array())))),
-    'source' => array_merge(array('' => "Vælg en kilde"), drupal_map_assoc(array_keys(variable_get('ting_well_sources', array())))),
+    //'source' => array_merge(array('' => "Vælg en kilde"), drupal_map_assoc(array_keys(variable_get('ting_well_sources', array())))),
     'language' => array(
       '' => "Vælg et sprog",
       'arabisk' => "arabisk",
@@ -317,7 +317,7 @@ function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
       }
     }
   }
-  //$form['#submit'] = array('ting_search_submit');
+  $form['#submit'] = array('ting_search_submit');
   
   // This submits the form to a blank page and prevents the search to be
   // executed twice. See http://platform.dandigbib.org/issues/372 for more
