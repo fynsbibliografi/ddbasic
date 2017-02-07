@@ -134,8 +134,222 @@ function ddbasic_form_alter(&$form, &$form_state, $form_id) {
       break;
   }
 }
+/*
+ * OC special search form.
+ */
+function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
 
+    $ting_well_data = array(
+    'type' => array_merge(array('' => "Vælg en type"), drupal_map_assoc(array_keys(variable_get('ting_well_types', array())))),
+    'source' => array_merge(array('' => "Vælg en kilde"), drupal_map_assoc(array_keys(variable_get('ting_well_sources', array())))),
+    'language' => array(
+      '' => "Vælg et sprog",
+      'arabisk' => "arabisk",
+      'dansk' => "dansk",
+      'engelsk' => "engelsk",
+      'fransk' => "fransk",
+      'italiensk' => "italiensk",
+      'kalaallisut' => "kalaallisut",
+      'kinesisk' => "kinesisk",
+      'kroatisk' => "kroatisk",
+      'kurdisk' => "kurdisk",
+      'latin' => "latin",
+      'norsk' => "norsk",
+      'persisk' => "persisk",
+      'polsk' => "polsk",
+      'russisk' => "russisk",
+      'serbisk' => "serbisk",
+      'somalisk' => "somalisk",
+      'spansk' => "spansk",
+      'svensk' => "svensk",
+      'tamilsk' => "tamilsk",
+      'tyrkisk' => "tyrkisk",
+      'tysk' => "tysk",
+      'urdu' => "urdu",
+      'vietnamesisk' => "vietnamesisk",
+    ),
+    'branch' =>  array_merge(array('' => t('Choose a branch')), ding_provider_invoke('reservation', 'pickup_branches')),
+    //Needs DDElibra trimning to limit values.
+    //'department' => array_merge(array('' => t('Choose a target')), alma_client_invoke('get_departments')),
+      'department' => array_merge(array('' => t('Choose a target')), array()),
+  );
+  /*
+      Fixing Search from branch id's to support danish special char's.
+   *  ~oe = ø
+      ~aa = å
+   *  ~ae = æ
+   * 
+  */
+  $SpecialCharBranchArray = array();
+  foreach($ting_well_data['branch'] as $key => $Branch)
+  {
+      $NewKey = str_replace('~oe','ø',$key);
+      $NewKey = str_replace('~aa','å',$NewKey);
+      $NewKey = str_replace('~ae','æ',$NewKey);
+      $SpecialCharBranchArray[$NewKey] = $ting_well_data['branch'][$key];
+  }
+  if(sizeof($SpecialCharBranchArray) != 0)
+  {
+      $ting_well_data['branch'] = $SpecialCharBranchArray; //Replace with new array.
+  }
+  
+  $advanced_fields = array(
+    'term.title' => array(
+      'key' => 'title',
+      'title' => t('Title'),
+      'description' => t('Enter title'),
+      'type' => 'textfield',
+    ),
+    'term.type' => array(
+      'key' => 'type',
+      'title' => t('Materialetype'),
+      'description' => t('Select type'),
+      'type' => 'select',
+      'options' => $ting_well_data['type'],
+    ),
+    'term.creator' => array(
+      'key' => 'creator',
+      'title' => t('Author'),
+      'description' => t('Enter the author name'),
+      'type' => 'textfield',
+    ),
+    'term.language' => array(
+      'key' => 'language',
+      'title' => t('Language'),
+      'description' => t('Select language'),
+      'type' => 'select',
+      'options' => $ting_well_data['language'],
+    ),
+    'term.subject' => array(
+      'key' => 'cql',
+      'title' => t('Subject'),
+      'description' => t('Enter subject keywords'),
+      'type' => 'textfield',
+    ),
+    'term.creator' => array(
+      'key' => 'creator',
+      'title' => t('Author'),
+      'description' => t('Enter the author name'),
+      'type' => 'textfield',
+    ),
+    'term.subject' => array(
+      'key' => 'subject',
+      'title' => t('Subject'),
+      'description' => t('Enter subject keywords'),
+      'type' => 'textfield',
+    ),
+    'facet.dk5' => array(
+      'key' => 'dk5',
+      'title' => t('dk5'),
+      'description' => t('Enter dk5'),
+      'type' => 'textfield',
+    ),
+    'term.date' => array(
+      'key' => 'date',
+      'index' => 'facet',
+      'title' => t('Year'),
+      'description' => t('Year'),
+      'type' => 'textfield',
+    ),
+  );
+  // We're going to disable advanced search in
+  // the first version, and implement later on.
+  // When implementing againg, set
+  // $advanced = TRUE - just below
+  // and re-enable asserts in testTingExtended() in ting_search.test.
+  $advanced = TRUE;
 
+  // Parse extended search query parameters.
+  if (arg(0) == 'search') {
+    $parts = explode('/', $_GET['q']);
+    // Lose 'search' and the search type.
+    array_shift($parts);
+    $type = array_shift($parts);
+    $search_query = implode('/', $parts);
+    $indexes = ting_search_extract_keys($search_query, array_keys($advanced_fields));
+    $search_query = $indexes['q'];
+    unset($indexes['q']);
+    if ($type != 'ting' and !empty($indexes)) {
+      $search_query .= " " . implode(' ', $indexes);
+      $indexes = array();
+      $advanced = TRUE;
+    }
+
+    $form['search_block_form']['#default_value'] = array($search_query);
+  }
+
+  $form['sort'] = array(
+    '#type' => 'hidden',
+    '#default_value' => isset($_GET['sort']) ? check_plain($_GET['sort']) : FALSE,
+    '#attributes' => array('id' => 'controls_search_sort'),
+  );
+  $form['size'] = array(
+    '#type' => 'hidden',
+    '#default_value' => isset($_GET['size']) ? (int)$_GET['size'] : FALSE,
+    '#attributes' => array('id' => 'controls_search_size'),
+  );
+
+  // See line 127-130 - disable in the first version
+  //$form['form_id']['#suffix'] = ting_search_get_extended_actions();
+
+  if ($advanced) {
+    $form['advanced'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Advanced search'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#weight' => '101',
+      '#class' => 'extendsearch-advanced',
+      '#prefix' => '',
+      '#suffix' => '',
+      '#attached' => array(
+        'css' => array(
+          drupal_get_path('module', 'ting_search') . '/ting_search_extendform.css',
+        ),
+        'js' => array(
+          drupal_get_path('module', 'ting_search') . '/ting_search_extendform.js',
+        ),
+      ),
+    );
+    if (!empty($indexes)) {
+      $form['advanced']['#collapsed'] = FALSE;
+    }
+
+    $expand = FALSE;
+    foreach ($advanced_fields as $name => $field) {
+      if ($field['type'] == 'select') {
+        $form['advanced'][$field['key']] = array(
+          '#type' => $field['type'],
+          '#options' => isset($field['options']) ? $field['options'] : '',
+          '#title' => $field['title'],
+          '#description' => $field['description'],
+          '#default_value' => isset($indexes[$name]) ? $indexes[$name] : '',
+        );
+      } else {
+        $form['advanced'][$field['key']] = array(
+          '#type' => $field['type'],
+          '#title' => $field['title'],
+          '#size' => 30,
+          '#maxlength' => 64,
+          '#description' => $field['description'],
+          '#default_value' => isset($indexes[$name]) ? $indexes[$name] : '',
+        );
+      }
+    }
+  }
+  //$form['#submit'] = array('ting_search_submit');
+  
+  // This submits the form to a blank page and prevents the search to be
+  // executed twice. See http://platform.dandigbib.org/issues/372 for more
+  // information.
+  /*$path_parts = explode('/', drupal_get_path_alias($_GET['q']));
+      /* @var $path_parts type */
+      /*if (isset($path_parts[1]) && $path_parts[1] != 'node') {
+        $form['#action'] = '?q=search-blank';
+      }*/
+  
+  return $form;
+}
 /**
  * Implements hook_preprocess_panels_pane().
  */
@@ -1008,4 +1222,151 @@ function ddbasic_preprocess_ting_object(&$vars) {
         break;
     }
   }
+}
+function InitCqlNamespaces()
+{
+    //Check if already generated once , else reload.
+    if(variable_get('Cqlterms') != null)
+    {
+        return variable_get('Cqlterms');
+    }
+    else
+    {
+        $namespaces = array();
+        $namespaces["dkcclphrase"] = array();
+        $namespaces["dkcclterm"][] = "ac"; //using short hand might give problems ? 
+        $namespaces["dkcclterm"][] = "ag";
+        $namespaces["dkcclterm"][] = "aj";
+        $namespaces["dkcclterm"][] = "ar";
+        $namespaces["dkcclterm"][] = "au";
+        $namespaces["dkcclterm"][] = "bc";
+        $namespaces["dkcclterm"][] = "br";
+        $namespaces["dkcclterm"][] = "bs";
+        $namespaces["dkcclterm"][] = "cl";
+        $namespaces["dkcclterm"][] = "co";
+        $namespaces["dkcclterm"][] = "cp";
+        $namespaces["dkcclterm"][] = "db";
+        $namespaces["dkcclterm"][] = "df";
+        $namespaces["dkcclterm"][] = "dk";
+        $namespaces["dkcclterm"][] = "ds";
+        $namespaces["dkcclterm"][] = "ed";
+        $namespaces["dkcclterm"][] = "ef";
+        $namespaces["dkcclterm"][] = "ej";
+        $namespaces["dkcclterm"][] = "ek";
+        $namespaces["dkcclterm"][] = "em";
+        $namespaces["dkcclterm"][] = "en";
+        $namespaces["dkcclterm"][] = "ep";
+        $namespaces["dkcclterm"][] = "es";
+        $namespaces["dkcclterm"][] = "fb";
+        $namespaces["dkcclterm"][] = "fg";
+        $namespaces["dkcclterm"][] = "fl";
+        $namespaces["dkcclterm"][] = "fm";
+        $namespaces["dkcclterm"][] = "fo";
+        $namespaces["dkcclterm"][] = "fv";
+        $namespaces["dkcclterm"][] = "gd";
+        $namespaces["dkcclterm"][] = "hm";
+        $namespaces["dkcclterm"][] = "ht";
+        $namespaces["dkcclterm"][] = "ib";
+        $namespaces["dkcclterm"][] = "ic";
+        $namespaces["dkcclterm"][] = "id";
+        $namespaces["dkcclterm"][] = "im";
+        $namespaces["dkcclterm"][] = "in";
+        $namespaces["dkcclterm"][] = "ip";
+        $namespaces["dkcclterm"][] = "ir";
+        $namespaces["dkcclterm"][] = "is";
+        $namespaces["dkcclterm"][] = "ix";
+        $namespaces["dkcclterm"][] = "ka";
+        $namespaces["dkcclterm"][] = "ke";
+        $namespaces["dkcclterm"][] = "kg";
+        $namespaces["dkcclterm"][] = "kk";
+        $namespaces["dkcclterm"][] = "kl";
+        $namespaces["dkcclterm"][] = "km";
+        $namespaces["dkcclterm"][] = "kn";
+        $namespaces["dkcclterm"][] = "ko";
+        $namespaces["dkcclterm"][] = "kr";
+        $namespaces["dkcclterm"][] = "kx";
+        $namespaces["dkcclterm"][] = "ld";
+        $namespaces["dkcclterm"][] = "li";
+        $namespaces["dkcclterm"][] = "ll";
+        $namespaces["dkcclterm"][] = "ln";
+        $namespaces["dkcclterm"][] = "ma";
+        $namespaces["dkcclterm"][] = "me";
+        $namespaces["dkcclterm"][] = "mo";
+        $namespaces["dkcclterm"][] = "ms";
+        $namespaces["dkcclterm"][] = "nb";
+        $namespaces["dkcclterm"][] = "nl";
+        $namespaces["dkcclterm"][] = "nm";
+        $namespaces["dkcclterm"][] = "no";
+        $namespaces["dkcclterm"][] = "nr";
+        $namespaces["dkcclterm"][] = "ns";
+        $namespaces["dkcclterm"][] = "nt";
+        $namespaces["dkcclterm"][] = "nv";
+        $namespaces["dkcclterm"][] = "oc";
+        $namespaces["dkcclterm"][] = "ok";
+        $namespaces["dkcclterm"][] = "op";
+        $namespaces["dkcclterm"][] = "ou";
+        $namespaces["dkcclterm"][] = "pa";
+        $namespaces["dkcclterm"][] = "pe";
+        $namespaces["dkcclterm"][] = "po";
+        $namespaces["dkcclterm"][] = "pu";
+        $namespaces["dkcclterm"][] = "rt";
+        $namespaces["dkcclterm"][] = "se";
+        $namespaces["dkcclterm"][] = "sf";
+        $namespaces["dkcclterm"][] = "so";
+        $namespaces["dkcclterm"][] = "sp";
+        $namespaces["dkcclterm"][] = "st";
+        $namespaces["dkcclterm"][] = "tf";
+        $namespaces["dkcclterm"][] = "tg";
+        $namespaces["dkcclterm"][] = "ti";
+        $namespaces["dkcclterm"][] = "ts";
+        $namespaces["dkcclterm"][] = "tt";
+        $namespaces["dkcclterm"][] = "uk";
+        $namespaces["dkcclterm"][] = "ul";
+        $namespaces["dkcclterm"][] = "ut";
+        $namespaces["dkcclterm"][] = "uu";
+        $namespaces["dkcclterm"][] = "vp";
+        $namespaces["dkcclterm"][] = "ww";
+        $namespaces["dkcclterm"][] = "år";
+        
+        $namespaces["term"][] = "accessType";
+        $namespaces["term"][] = "acSource";
+        $namespaces["term"][] = "acquisitionDate";
+        $namespaces["term"][] = "audience";
+        $namespaces["term"][] = "audienceRecommended";
+        $namespaces["term"][] = "audienceRestricted";
+        $namespaces["term"][] = "category";
+        $namespaces["term"][] = "creator";
+        $namespaces["term"][] = "date";
+        $namespaces["term"][] = "default";
+        $namespaces["term"][] = "description";
+        $namespaces["term"][] = "genre";
+        $namespaces["term"][] = "identifier";
+        $namespaces["term"][] = "isbn";
+        $namespaces["term"][] = "language";
+        $namespaces["term"][] = "literaryForm";
+        $namespaces["term"][] = "mainCreator";
+        $namespaces["term"][] = "mainTitle";
+        $namespaces["term"][] = "nationality";
+        $namespaces["term"][] = "onlineAccess";
+        $namespaces["term"][] = "partOf";
+        $namespaces["term"][] = "primaryLanguage";
+        $namespaces["term"][] = "publisher";
+        $namespaces["term"][] = "reviewedCreator";
+        $namespaces["term"][] = "reviewedIdentifier";
+        $namespaces["term"][] = "reviewedPublisher";
+        $namespaces["term"][] = "reviewedTitle";
+        $namespaces["term"][] = "reviewer";
+        $namespaces["term"][] = "source";
+        $namespaces["term"][] = "subject";
+        $namespaces["term"][] = "type";
+        $namespaces["term"][] = "title";
+        $namespaces["term"][] = "trackTitle";
+        $namespaces["term"][] = "typeCategory";
+        
+        $namespaces["phrase"][] = "titleSeries";
+        
+        variable_set('Cqlterms', $namespaces);
+        return $namespaces;
+    }
+    
 }
