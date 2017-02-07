@@ -172,27 +172,7 @@ function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
     //Needs DDElibra trimning to limit values.
     //'department' => array_merge(array('' => t('Choose a target')), alma_client_invoke('get_departments')),
       'department' => array_merge(array('' => t('Choose a target')), array()),
-  );
-  /*
-      Fixing Search from branch id's to support danish special char's.
-   *  ~oe = ø
-      ~aa = å
-   *  ~ae = æ
-   * 
-  */
-  $SpecialCharBranchArray = array();
-  foreach($ting_well_data['branch'] as $key => $Branch)
-  {
-      $NewKey = str_replace('~oe','ø',$key);
-      $NewKey = str_replace('~aa','å',$NewKey);
-      $NewKey = str_replace('~ae','æ',$NewKey);
-      $SpecialCharBranchArray[$NewKey] = $ting_well_data['branch'][$key];
-  }
-  if(sizeof($SpecialCharBranchArray) != 0)
-  {
-      $ting_well_data['branch'] = $SpecialCharBranchArray; //Replace with new array.
-  }
-  
+  );  
   $advanced_fields = array(
     'term.title' => array(
       'key' => 'title',
