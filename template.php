@@ -184,6 +184,7 @@ function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
       'title' => t('Title'),
       'description' => t('Enter title'),
       'type' => 'textfield',
+      '#attributes' => array('placeholder' => t('Enter title')),
     ),
     'term.type' => array(
       'key' => 'type',
@@ -197,6 +198,7 @@ function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
       'title' => t('Author'),
       'description' => t('Enter the author name'),
       'type' => 'textfield',
+      '#attributes' => array('placeholder' => t('Enter the author name')),      
     ),
     'term.language' => array(
       'key' => 'language',
@@ -210,24 +212,28 @@ function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
       'title' => t('Subject'),
       'description' => t('Enter subject keywords'),
       'type' => 'textfield',
+      '#attributes' => array('placeholder' => t('Enter subject keywords')),
     ),
     'term.creator' => array(
       'key' => 'creator',
       'title' => t('Author'),
       'description' => t('Enter the author name'),
       'type' => 'textfield',
+      '#attributes' => array('placeholder' => t('Enter the author name')),
     ),
     'term.subject' => array(
       'key' => 'subject',
       'title' => t('Subject'),
       'description' => t('Enter subject keywords'),
       'type' => 'textfield',
+      '#attributes' => array('placeholder' => t('Enter subject keywords')),
     ),
     'facet.dk5' => array(
       'key' => 'dk5',
       'title' => t('dk5'),
       'description' => t('Enter dk5'),
       'type' => 'textfield',
+      '#attributes' => array('placeholder' => t('Enter dk5')),
     ),
     'term.date' => array(
       'key' => 'date',
@@ -235,6 +241,7 @@ function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
       'title' => t('Year'),
       'description' => t('Year'),
       'type' => 'textfield',
+      '#attributes' => array('placeholder' => t('Year')),
     ),
   );
   // We're going to disable advanced search in
@@ -290,6 +297,7 @@ function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
       '#attached' => array(
         'css' => array(
           drupal_get_path('module', 'ting_search') . '/ting_search_extendform.css',
+          drupal_get_path('module', 'oc_bib_extern_search') . '/css/advanced_search_overwrites.css',
         ),
         'js' => array(
           drupal_get_path('module', 'ting_search') . '/ting_search_extendform.js',
@@ -306,18 +314,20 @@ function ddbasic_form_search_block_form_alter(&$form, &$form_state, $form_id) {
         $form['advanced'][$field['key']] = array(
           '#type' => $field['type'],
           '#options' => isset($field['options']) ? $field['options'] : '',
-          '#title' => $field['title'],
-          '#description' => $field['description'],
+          //'#title' => $field['title'],
+          //'#description' => $field['description'],
           '#default_value' => isset($indexes[$name]) ? $indexes[$name] : '',
+          '#attributes' => isset($field['#attributes']) ? $field['#attributes']: '',
         );
       } else {
         $form['advanced'][$field['key']] = array(
           '#type' => $field['type'],
-          '#title' => $field['title'],
+          //'#title' => $field['title'],
           '#size' => 30,
           '#maxlength' => 64,
-          '#description' => $field['description'],
+          //'#description' => $field['description'],
           '#default_value' => isset($indexes[$name]) ? $indexes[$name] : '',
+          '#attributes' => isset($field['#attributes']) ? $field['#attributes']: '',
         );
       }
     }
@@ -1208,6 +1218,8 @@ function ddbasic_preprocess_ting_object(&$vars) {
     }
   }
 }
+
+
 function InitCqlNamespaces()
 {
     //Check if already generated once , else reload.
