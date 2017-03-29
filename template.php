@@ -909,7 +909,7 @@ function ddbasic_menu_link__menu_tabs_menu($vars) {
       $element['#attributes']['class'][] = 'topbar-link-signout';
 
       break;
-    case (strpos($a, 'bookmark') !== false):
+    case (strpos($element['#href'], 'bookmark') !== false):
          $element['#localized_options']['attributes']['class'][] = 'js-topbar-link';
          $element['#attributes']['class'] = array();
       break;
