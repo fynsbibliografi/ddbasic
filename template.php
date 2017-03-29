@@ -911,7 +911,7 @@ function ddbasic_menu_link__menu_tabs_menu($vars) {
       break;
     case (strpos($element['#href'], 'bookmark') !== false):
          $title_prefix = '<i class="icon-align-justify"></i>';
-         $element['#localized_options']['attributes']['class'][] = 'js-topbar-link';
+         //$element['#localized_options']['attributes']['class'][] = 'js-topbar-link';
          //$element['#attributes']['class'] = array();
       break;
         
