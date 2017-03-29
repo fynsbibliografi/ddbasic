@@ -911,7 +911,7 @@ function ddbasic_menu_link__menu_tabs_menu($vars) {
       break;
     case strpos($a, 'bookmark') !== false:
          $element['#localized_options']['attributes']['class'][] = 'js-topbar-link';
-        
+         $element['#attributes']['class'] = array();
       break;
         
     default:
