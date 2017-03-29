@@ -909,7 +909,11 @@ function ddbasic_menu_link__menu_tabs_menu($vars) {
       $element['#attributes']['class'][] = 'topbar-link-signout';
 
       break;
-
+    case strpos($a, 'bookmark') !== false:
+         $element['#localized_options']['attributes']['class'][] = 'js-topbar-link';
+        
+      break;
+        
     default:
       $title_prefix = '<i class="icon-align-justify"></i>';
       $element['#localized_options']['attributes']['class'][] = 'topbar-link-menu';
