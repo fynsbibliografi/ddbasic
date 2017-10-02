@@ -113,7 +113,7 @@ function ddbasic_form_alter(&$form, &$form_state, $form_id) {
         '#value' => t('Avanceret'),
         '#attributes' => array('onclick' => 'jQuery("input[value=\'Avanceret\']").off("click");jQuery(".search-field-wrapper .fieldset-title").click();return false;')
       );
-      $form['action'] = array_reverse($form['actions']);
+      $form['actions'] = array_reverse($form['actions']);
       // Remove element-invisible
       unset($form['search_block_form']['#title_display']);
       break;
