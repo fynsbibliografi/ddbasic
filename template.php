@@ -110,8 +110,8 @@ function ddbasic_form_alter(&$form, &$form_state, $form_id) {
       $form['actions']['advanced_search_btn'] = array
       (
         '#type' => 'submit',
-        '#value' => t('Advanceret'),
-        '#attributes' => array('onclick' => 'jQuery("input[value=\'Advanceret\']").off("click");jQuery(".search-field-wrapper .fieldset-title").click();return false;')
+        '#value' => t('Avanceret'),
+        '#attributes' => array('onclick' => 'jQuery("input[value=\'Avanceret\']").off("click");jQuery(".search-field-wrapper .fieldset-title").click();return false;')
       );
       $form['action'] = array_reverse($form['actions']);
       // Remove element-invisible
